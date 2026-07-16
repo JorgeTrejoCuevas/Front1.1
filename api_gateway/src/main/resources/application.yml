@@ -1,0 +1,53 @@
+spring:
+  application:
+    name: api-gateway
+  
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: auth-service
+              uri: lb://M1-AUTH-SERVICE
+              predicates:
+                - Path=/api/auth/**
+            
+            - id: user-service
+              uri: lb://M2-USER-SERVICE
+              predicates:
+                - Path=/api/usuario/**, /api/profesores/**, /api/estudiantes/**
+          
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowed-origins: "*"
+                allowed-methods:
+                  - GET
+                  - POST
+                  - PUT
+                  - PATCH
+                  - DELETE
+                  - OPTIONS
+                allowed-headers: "*"
+                allow-credentials: false
+
+server:
+  port: 8080
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+# Swagger
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
+    try-it-out-enabled: true
+    groups-order: asc
