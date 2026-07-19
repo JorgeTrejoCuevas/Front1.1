@@ -11,13 +11,13 @@ import asyncio
 from contextlib import asynccontextmanager
 
 # --- CONFIGURACIÓN DE REGISTRO EN EUREKA (NATAL DE PYTHON) ---
-EUREKA_SERVER = "http://eureka-server:8761/eureka/apps/GENE-SERVICE"
+EUREKA_SERVER = "http://localhost:8761/eureka/apps/GENE-SERVICE"
 INSTANCE_DATA = {
     "instance": {
-        "instanceId": "gene-service:8000",
-        "hostName": "gene-service",
+        "instanceId": "localhost:8000",
+        "hostName": "localhost",
         "app": "GENE-SERVICE",
-        "ipAddr": "gene-service",
+        "ipAddr": "127.0.0.1",
         "status": "UP",
         "overriddenStatus": "UNKNOWN",
         "port": {"$": 8000, "@enabled": "true"},
@@ -27,7 +27,7 @@ INSTANCE_DATA = {
             "@class": "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo",
             "name": "MyOwn"
         },
-        "metadata": {"@class": "java.util.Collections$EmptyMap"}
+        "metadata": {}
     }
 }
 
@@ -59,7 +59,7 @@ async def lifespan(app: FastAPI):
             await asyncio.sleep(30)
             try:
                 # Si Eureka lo llega a borrar temporalmente por latencia, el PUT le recordará existir
-                response = requests.put(f"{EUREKA_SERVER}/gene-service:8000", timeout=5)
+                response = requests.put(f"{EUREKA_SERVER}/localhost:8000", timeout=5)
                 if response.status_code == 404:
                     # Si Eureka responde 404, significa que perdió el registro; volvemos a enviarlo
                     requests.post(EUREKA_SERVER, json=INSTANCE_DATA, timeout=5)
@@ -71,7 +71,7 @@ async def lifespan(app: FastAPI):
     
     # Al apagar: Eliminar de Eureka
     try:
-        requests.delete(f"{EUREKA_SERVER}/gene-service:8000", timeout=5)
+        requests.delete(f"{EUREKA_SERVER}/localhost:8000", timeout=5)
         print("🗑️ Eliminado de Eureka con éxito")
     except Exception:
         pass
