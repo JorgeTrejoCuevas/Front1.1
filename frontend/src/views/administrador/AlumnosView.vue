@@ -5,11 +5,9 @@
         <router-link to="/dashboard" class="nav-figure">
           <img src="../../imagenes/logo.png" class="nav-logo" alt="Logo Cronos" />
         </router-link>
-
         <label class="nav-toggle" for="menu-input">
           <input type="checkbox" id="menu-input" class="nav-input" />
         </label>
-
         <ul class="nav-list">
           <li class="nav-item"><router-link to="/dashboard" class="nav-link">Panel de control</router-link></li>
           <li class="nav-item"><router-link :to="{ name: 'perfil-admin' }" class="nav-link">Perfil</router-link></li>
@@ -52,18 +50,14 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="alumno in currentAlumnos" :key="alumno.id_estudiante">
-                <td :data-label="'Nombre'">
-                  {{ alumno.nombreCompleto || alumno.nombre || alumno.usuario?.nombre || 'Sin nombre' }}
-                </td>
-                <td :data-label="'Correo'">
-                  {{ alumno.correoElectronico || alumno.correo || alumno.usuario?.correo || 'Sin correo' }}
-                </td>
-                <td :data-label="'Grupo'">{{ obtenerNombreGrupo(alumno.idGrupo || alumno.id_grupo) }}</td>
+              <tr v-for="alumno in currentAlumnos" :key="alumno.id">
+                <td :data-label="'Nombre'">{{ alumno.nombreCompleto }}</td>
+                <td :data-label="'Correo'">{{ alumno.correoElectronico }}</td>
+                <td :data-label="'Grupo'">{{ obtenerNombreGrupo(alumno.idGrupo) }}</td>
                 <td :data-label="'Matrícula'">{{ alumno.matricula }}</td>
                 <td :data-label="'Acciones'">
                   <button class="btn-secondary btn-accion" @click="editarAlumno(alumno)">Editar</button>
-                  <button class="btn-danger btn-accion" @click="eliminarAlumno(alumno.id_estudiante)">Eliminar</button>
+                  <button class="btn-danger btn-accion" @click="eliminarAlumno(alumno.id)">Eliminar</button>
                 </td>
               </tr>
             </tbody>
@@ -112,27 +106,32 @@
                 <label>Nombre</label>
                 <input v-model="formAlumno.nombre" type="text" required />
               </div>
+
               <div class="input-group">
                 <label>Apellido Paterno</label>
-                <input v-model="formAlumno.apellido_paterno" type="text" required />
+                <input v-model="formAlumno.apellidoPaterno" type="text" required />
               </div>
+
               <div class="input-group">
                 <label>Apellido Materno</label>
-                <input v-model="formAlumno.apellido_materno" type="text" />
+                <input v-model="formAlumno.apellidoMaterno" type="text" />
               </div>
+
               <div class="input-group">
                 <label>Correo Electrónico</label>
-                <input v-model="formAlumno.correo_electronico" type="email" required />
+                <input v-model="formAlumno.correoElectronico" type="email" required />
               </div>
+
               <div class="input-group">
                 <label>Grupo</label>
-                <select v-model="formAlumno.id_grupo" required>
+                <select v-model="formAlumno.idGrupo" required>
                   <option disabled value="">Selecciona un grupo</option>
                   <option v-for="g in grupos" :key="g.id" :value="g.id">
                     {{ g.nombre }}
                   </option>
                 </select>
               </div>
+
               <div class="input-group">
                 <label>Matrícula</label>
                 <input v-model="formAlumno.matricula" type="text" required />
@@ -158,12 +157,12 @@ import Swal from 'sweetalert2'
 import '../../assets/styles.css'
 
 const router = useRouter()
-const API_ALUMNOS = `/api/estudiantes`
-const API_GRUPOS = `/api/v1/grupos`
 
-const goBack = () => {
-  router.back()
-}
+const goBack = () => router.back()
+
+// ✅ URL del API Gateway
+const API_ESTUDIANTES = '/api/estudiantes'
+const API_GRUPOS = '/api/v1/grupos'
 
 const alumnos = ref([])
 const grupos = ref([])
@@ -175,10 +174,10 @@ const alumnoEditando = ref(null)
 
 const formAlumno = ref({
   nombre: '',
-  apellido_paterno: '',
-  apellido_materno: '',
-  correo_electronico: '',
-  id_grupo: '',
+  apellidoPaterno: '',
+  apellidoMaterno: '',
+  correoElectronico: '',
+  idGrupo: '',
   matricula: '',
 })
 
@@ -188,13 +187,13 @@ const indexOfFirstAlumno = computed(() => indexOfLastAlumno.value - itemsPerPage
 const currentAlumnos = computed(() => alumnos.value.slice(indexOfFirstAlumno.value, indexOfLastAlumno.value))
 const handlePageChange = (pageNumber) => (currentPage.value = pageNumber)
 
-const cargando = ref(false) 
+const cargando = ref(false)
 const cargandoAccion = ref(false)
 
 const obtenerAlumnos = async () => {
-  cargando.value = true 
+  cargando.value = true
   try {
-    const res = await axios.get(API_ALUMNOS)
+    const res = await axios.get(API_ESTUDIANTES)
     alumnos.value = res.data
   } catch (err) {
     console.error('Error al obtener alumnos:', err)
@@ -202,14 +201,10 @@ const obtenerAlumnos = async () => {
       icon: 'error',
       title: 'Error',
       text: 'No se pudieron cargar los alumnos',
-      confirmButtonColor: '#3ABEF9',
-      background: '#ffffff',
-      color: '#213547',
-      iconColor: '#E54848',
-      width: '450px',
+      confirmButtonColor: '#3ABEF9'
     })
   } finally {
-    cargando.value = false 
+    cargando.value = false
   }
 }
 
@@ -219,16 +214,6 @@ const obtenerGrupos = async () => {
     grupos.value = res.data
   } catch (err) {
     console.error('Error al obtener grupos:', err)
-    await Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: 'No se pudieron cargar los grupos',
-      confirmButtonColor: '#3ABEF9',
-      background: '#ffffff',
-      color: '#213547',
-      iconColor: '#E54848',
-      width: '450px',
-    })
   }
 }
 
@@ -242,10 +227,10 @@ const abrirFormularioNuevo = () => {
   alumnoEditando.value = null
   formAlumno.value = {
     nombre: '',
-    apellido_paterno: '',
-    apellido_materno: '',
-    correo_electronico: '',
-    id_grupo: '',
+    apellidoPaterno: '',
+    apellidoMaterno: '',
+    correoElectronico: '',
+    idGrupo: '',
     matricula: '',
   }
   mostrarFormulario.value = true
@@ -253,14 +238,13 @@ const abrirFormularioNuevo = () => {
 
 const editarAlumno = (alumno) => {
   modoEdicion.value = true
-  alumnoEditando.value = alumno.id_estudiante
-  const partesNombre = alumno.nombre.split(' ')
+  alumnoEditando.value = alumno.id
   formAlumno.value = {
-    nombre: partesNombre[0] || '',
-    apellido_paterno: partesNombre[1] || '',
-    apellido_materno: partesNombre[2] || '',
-    correo_electronico: alumno.correo || '',
-    id_grupo: alumno.id_grupo || '',
+    nombre: alumno.nombreCompleto.split(' ')[0] || '',
+    apellidoPaterno: alumno.nombreCompleto.split(' ')[1] || '',
+    apellidoMaterno: alumno.nombreCompleto.split(' ')[2] || '',
+    correoElectronico: alumno.correoElectronico || '',
+    idGrupo: alumno.idGrupo || '',
     matricula: alumno.matricula || '',
   }
   mostrarFormulario.value = true
@@ -269,49 +253,43 @@ const editarAlumno = (alumno) => {
 const guardarAlumno = async () => {
   cargandoAccion.value = true
   try {
+    const payload = {
+      nombre: formAlumno.value.nombre,
+      apellidoPaterno: formAlumno.value.apellidoPaterno || '',
+      apellidoMaterno: formAlumno.value.apellidoMaterno || '',
+      correoElectronico: formAlumno.value.correoElectronico,
+      idGrupo: parseInt(formAlumno.value.idGrupo),
+      matricula: formAlumno.value.matricula
+    }
+
     if (modoEdicion.value) {
-      await axios.patch(`${API_ALUMNOS}/${alumnoEditando.value}`, formAlumno.value)
-      cargandoAccion.value = false
+      await axios.patch(`${API_ESTUDIANTES}/${alumnoEditando.value}`, payload)
       await Swal.fire({
         icon: 'success',
         title: '¡Actualizado!',
         text: 'Alumno actualizado correctamente',
         showConfirmButton: false,
-        timer: 2000,
-        background: '#ffffff',
-        color: '#213547',
-        iconColor: '#3ABEF9',
-        width: '450px',
+        timer: 2000
       })
     } else {
-      await axios.post(API_ALUMNOS, formAlumno.value)
-      cargandoAccion.value = false
+      await axios.post(API_ESTUDIANTES, payload)
       await Swal.fire({
         icon: 'success',
         title: '¡Agregado!',
         text: 'Alumno agregado correctamente',
         showConfirmButton: false,
-        timer: 2000,
-        background: '#ffffff',
-        color: '#213547',
-        iconColor: '#3ABEF9',
-        width: '450px',
+        timer: 2000
       })
     }
     cerrarFormulario()
     await obtenerAlumnos()
   } catch (err) {
-    cargandoAccion.value = false
     console.error('Error guardando alumno:', err)
     await Swal.fire({
       icon: 'error',
       title: 'Error',
       text: err.response?.data?.message || 'Error guardando alumno',
-      confirmButtonColor: '#3ABEF9',
-      background: '#ffffff',
-      color: '#213547',
-      iconColor: '#E54848',
-      width: '450px',
+      confirmButtonColor: '#3ABEF9'
     })
   } finally {
     cargandoAccion.value = false
@@ -327,42 +305,28 @@ const eliminarAlumno = async (id) => {
     confirmButtonText: 'Sí, eliminar',
     cancelButtonText: 'Cancelar',
     confirmButtonColor: '#E54848',
-    cancelButtonColor: '#88B7F3',
-    background: '#ffffff',
-    color: '#213547',
-    iconColor: '#E54848',
-    width: '500px',
+    cancelButtonColor: '#88B7F3'
   })
 
   if (confirm.isConfirmed) {
     cargandoAccion.value = true
     try {
-      await axios.delete(`${API_ALUMNOS}/${id}`)
-      cargandoAccion.value = false
+      await axios.delete(`${API_ESTUDIANTES}/${id}`)
       await Swal.fire({
         icon: 'success',
         title: 'Eliminado',
         text: 'Alumno eliminado correctamente',
         showConfirmButton: false,
-        timer: 2000,
-        background: '#ffffff',
-        color: '#213547',
-        iconColor: '#3ABEF9',
-        width: '450px',
+        timer: 2000
       })
       await obtenerAlumnos()
     } catch (err) {
-      cargandoAccion.value = false
       console.error('Error al eliminar alumno:', err)
       await Swal.fire({
         icon: 'error',
         title: 'Error',
         text: 'No se pudo eliminar el alumno',
-        confirmButtonColor: '#3ABEF9',
-        background: '#ffffff',
-        color: '#213547',
-        iconColor: '#E54848',
-        width: '450px',
+        confirmButtonColor: '#3ABEF9'
       })
     } finally {
       cargandoAccion.value = false

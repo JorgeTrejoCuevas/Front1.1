@@ -5,11 +5,9 @@
         <router-link to="/dashboard" class="nav-figure">
           <img src="../../imagenes/logo.png" class="nav-logo" alt="Logo Cronos" />
         </router-link>
-
         <label class="nav-toggle" for="menu-input">
           <input type="checkbox" id="menu-input" class="nav-input" />
         </label>
-
         <ul class="nav-list">
           <li class="nav-item"><router-link to="/dashboard" class="nav-link">Panel de control</router-link></li>
           <li class="nav-item"><router-link :to="{ name: 'perfil-admin' }" class="nav-link">Perfil</router-link></li>
@@ -23,7 +21,6 @@
     </div>
 
     <main class="profesores-main">
-      <!-- HEADER CON BOTÓN REGRESAR -->
       <div class="profesores-header">
         <button @click="goBack" class="btn-back-icon" title="Volver al Dashboard">
           <i class="fas fa-arrow-left"></i>
@@ -35,37 +32,22 @@
         <div class="header-spacer"></div>
       </div>
 
-      <!-- FILTROS -->
       <div class="filtros-container">
         <div class="filtros-buttons">
-          <button 
-            @click="cambiarFiltro('todos')" 
-            :class="['filtro-btn', { active: tipoVista === 'todos' }]"
-          >
+          <button @click="cambiarFiltro('todos')" :class="['filtro-btn', { active: tipoVista === 'todos' }]">
             <i class="fas fa-users"></i> Todos
           </button>
-          <button 
-            @click="cambiarFiltro('profesores')" 
-            :class="['filtro-btn', { active: tipoVista === 'profesores' }]"
-          >
+          <button @click="cambiarFiltro('profesores')" :class="['filtro-btn', { active: tipoVista === 'profesores' }]">
             <i class="fas fa-chalkboard-user"></i> Solo Profesores
           </button>
-          <button 
-            @click="cambiarFiltro('psicologos')" 
-            :class="['filtro-btn', { active: tipoVista === 'psicologos' }]"
-          >
+          <button @click="cambiarFiltro('psicologos')" :class="['filtro-btn', { active: tipoVista === 'psicologos' }]">
             <i class="fas fa-brain"></i> Solo Psicólogos
           </button>
         </div>
         
         <div class="filtro-busqueda">
           <i class="fas fa-search"></i>
-          <input 
-            v-model="terminoBusqueda" 
-            type="text" 
-            placeholder="Buscar por nombre o correo..."
-            class="busqueda-input"
-          />
+          <input v-model="terminoBusqueda" type="text" placeholder="Buscar por nombre o correo..." class="busqueda-input" />
           <button v-if="terminoBusqueda" @click="terminoBusqueda = ''" class="limpiar-busqueda">
             <i class="fas fa-times"></i>
           </button>
@@ -90,29 +72,28 @@
                 <th>Acciones</th>
               </tr>
             </thead>
-           <tbody>
-  <tr v-for="profesor in currentProfesores" :key="profesor.id">
-    <td :data-label="'Nombre'">
-      <div class="nombre-info">
-        <span v-if="profesor.es_psicologo" class="psicologo-badge"></span>
-        {{ profesor.nombreCompleto }}
-      </div>
-    </td>
-    <td :data-label="'Correo'">{{ profesor.correoElectronico || '-' }}</td>
-    <td :data-label="'Teléfono'">{{ profesor.telefono || '-' }}</td>
-    <td :data-label="'Título'">{{ profesor.titulo || '-' }}</td>
-    <td :data-label="'Tipo'">
-      <span :class="['tipo-badge', profesor.es_psicologo ? 'psicologo' : 'profesor']">
-        {{ profesor.es_psicologo ? 'Psicólogo' : 'Profesor' }}
-      </span>
-    </td>
-    <td :data-label="'Acciones'">
-      <button class="btn-secondary btn-accion" @click="editarProfesor(profesor)">Editar</button>
-      <button class="btn-danger btn-accion" @click="eliminarProfesor(profesor.id)">Eliminar</button>
-      <button class="btn-primary btn-accion" @click="verDisponibilidad(profesor)">Disponibilidad</button>
-    </td>
-  </tr>
-</tbody>
+            <tbody>
+              <tr v-for="profesor in currentProfesores" :key="profesor.id">
+                <td :data-label="'Nombre'">
+                  <div class="nombre-info">
+                    <span v-if="profesor.esPsicologo" class="psicologo-badge">🧠</span>
+                    {{ profesor.nombreCompleto }}
+                  </div>
+                </td>
+                <td :data-label="'Correo'">{{ profesor.correoElectronico || '-' }}</td>
+                <td :data-label="'Teléfono'">{{ profesor.telefono || '-' }}</td>
+                <td :data-label="'Título'">{{ profesor.titulo || '-' }}</td>
+                <td :data-label="'Tipo'">
+                  <span :class="['tipo-badge', profesor.esPsicologo ? 'psicologo' : 'profesor']">
+                    {{ profesor.esPsicologo ? 'Psicólogo' : 'Profesor' }}
+                  </span>
+                </td>
+                <td :data-label="'Acciones'">
+                  <button class="btn-secondary btn-accion" @click="editarProfesor(profesor)">Editar</button>
+                  <button class="btn-danger btn-accion" @click="eliminarProfesor(profesor.id)">Eliminar</button>
+                </td>
+              </tr>
+            </tbody>
           </table>
 
           <div class="pagination">
@@ -143,11 +124,11 @@
       </div>
     </main>
 
-    <!-- MODAL (ESTILO PERFIL) -->
+    <!-- Modal del formulario -->
     <div v-if="mostrarFormulario" class="form-overlay" @click.self="cerrarFormulario">
       <div class="form-modal">
         <div class="modal-header">
-          <h2>{{ modoEdicion ? 'Editar' : 'Agregar' }} {{ formProfesor.es_psicologo ? 'Psicólogo' : 'Profesor' }}</h2>
+          <h2>{{ modoEdicion ? 'Editar' : 'Agregar' }} {{ formProfesor.esPsicologo ? 'Psicólogo' : 'Profesor' }}</h2>
           <button class="close-btn" @click="cerrarFormulario">&times;</button>
         </div>
 
@@ -156,11 +137,7 @@
             <div class="form-grid-layout">
               <div class="input-group full-width">
                 <label class="checkbox-label">
-                  <input 
-                    type="checkbox" 
-                    v-model="formProfesor.es_psicologo" 
-                    :disabled="modoEdicion"
-                  />
+                  <input type="checkbox" v-model="formProfesor.esPsicologo" :disabled="modoEdicion" />
                   <span>Marcar como Psicólogo</span>
                   <small v-if="modoEdicion" class="disabled-note">(No se puede cambiar el tipo después de crear)</small>
                 </label>
@@ -173,17 +150,17 @@
 
               <div class="input-group">
                 <label>Apellido Paterno *</label>
-                <input v-model="formProfesor.apellido_paterno" type="text" placeholder="Apellido Paterno" required />
+                <input v-model="formProfesor.apellidoPaterno" type="text" placeholder="Apellido Paterno" required />
               </div>
 
               <div class="input-group">
                 <label>Apellido Materno</label>
-                <input v-model="formProfesor.apellido_materno" type="text" placeholder="Apellido Materno" />
+                <input v-model="formProfesor.apellidoMaterno" type="text" placeholder="Apellido Materno" />
               </div>
 
               <div class="input-group">
                 <label>Correo Electrónico *</label>
-                <input v-model="formProfesor.correo_electronico" type="email" placeholder="Correo" required />
+                <input v-model="formProfesor.correoElectronico" type="email" placeholder="Correo" required />
               </div>
 
               <div class="input-group">
@@ -211,18 +188,14 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
-import '../../assets/styles.css'
+import axios from '../../utils/axios-config'
 import Swal from 'sweetalert2'
+import '../../assets/styles.css'
 
 const router = useRouter()
+const goBack = () => router.back()
 
-const goBack = () => {
-  router.back()
-}
-
-// Cambia esto en tu ProfesoresView.vue:
-const API_URL = `http://localhost:8080/api/teachers` // En lugar de /api/profesores
+const API_URL = '/api/profesores'
 
 const profesores = ref([])
 const itemsPerPage = 5
@@ -230,34 +203,31 @@ const currentPage = ref(1)
 const mostrarFormulario = ref(false)
 const modoEdicion = ref(false)
 const profesorEditando = ref(null)
-const tipoVista = ref('todos') // 'todos', 'profesores', 'psicologos'
+const tipoVista = ref('todos')
 const terminoBusqueda = ref('')
 
 const formProfesor = ref({
   nombre: '',
-  apellido_paterno: '',
-  apellido_materno: '',
-  correo_electronico: '',
+  apellidoPaterno: '',
+  apellidoMaterno: '',
+  correoElectronico: '',
   telefono: '',
   titulo: '',
-  es_psicologo: false,
+  esPsicologo: false,
 })
 
 const profesoresFiltrados = computed(() => {
   let filtrados = profesores.value
   
-  // Filtrar por tipo
   if (tipoVista.value === 'profesores') {
-    filtrados = filtrados.filter(p => !p.es_psicologo)
+    filtrados = filtrados.filter(p => !p.esPsicologo)
   } else if (tipoVista.value === 'psicologos') {
-    filtrados = filtrados.filter(p => p.es_psicologo)
+    filtrados = filtrados.filter(p => p.esPsicologo)
   }
   
-  // Filtrar por búsqueda - AHORA BUSCAMOS EN LOS CAMPOS PLANOS
   if (terminoBusqueda.value.trim()) {
     const busqueda = terminoBusqueda.value.toLowerCase()
     filtrados = filtrados.filter(p => 
-      // Buscamos en nombreCompleto y correoElectronico, que son los campos que vienen del DTO
       p.nombreCompleto?.toLowerCase().includes(busqueda) ||
       p.correoElectronico?.toLowerCase().includes(busqueda)
     )
@@ -271,26 +241,16 @@ const indexOfLastProfesor = computed(() => currentPage.value * itemsPerPage)
 const indexOfFirstProfesor = computed(() => indexOfLastProfesor.value - itemsPerPage)
 const currentProfesores = computed(() => profesoresFiltrados.value.slice(indexOfFirstProfesor.value, indexOfLastProfesor.value))
 
-const handlePageChange = (pageNumber) => {
-  currentPage.value = pageNumber
-}
+const handlePageChange = (pageNumber) => { currentPage.value = pageNumber }
+const cambiarFiltro = (tipo) => { tipoVista.value = tipo; currentPage.value = 1 }
 
-// Cambiar filtro y resetear página
-const cambiarFiltro = (tipo) => {
-  tipoVista.value = tipo
-  currentPage.value = 1
-}
+watch(terminoBusqueda, () => { currentPage.value = 1 })
 
-// Resetear página cuando cambia la búsqueda
-watch(terminoBusqueda, () => {
-  currentPage.value = 1
-})
-
-const cargando = ref(false) 
+const cargando = ref(false)
 const cargandoAccion = ref(false)
 
 const obtenerProfesores = async () => {
-  cargando.value = true 
+  cargando.value = true
   try {
     const res = await axios.get(API_URL)
     profesores.value = res.data
@@ -300,14 +260,10 @@ const obtenerProfesores = async () => {
       icon: 'error',
       title: 'Error',
       text: 'No se pudieron cargar los profesores',
-      confirmButtonColor: '#3ABEF9',
-      background: '#ffffff',
-      color: '#213547',
-      iconColor: '#E54848',
-      width: '450px',
+      confirmButtonColor: '#3ABEF9'
     })
   } finally {
-    cargando.value = false 
+    cargando.value = false
   }
 }
 
@@ -316,12 +272,12 @@ const abrirFormularioNuevo = () => {
   profesorEditando.value = null
   formProfesor.value = {
     nombre: '',
-    apellido_paterno: '',
-    apellido_materno: '',
-    correo_electronico: '',
+    apellidoPaterno: '',
+    apellidoMaterno: '',
+    correoElectronico: '',
     telefono: '',
     titulo: '',
-    es_psicologo: tipoVista.value === 'psicologos', // Si estamos en vista de psicólogos, marcar automáticamente
+    esPsicologo: tipoVista.value === 'psicologos',
   }
   mostrarFormulario.value = true
 }
@@ -330,67 +286,58 @@ const editarProfesor = (profesor) => {
   modoEdicion.value = true
   profesorEditando.value = profesor.id
   formProfesor.value = {
-    nombre: profesor.usuario?.nombre || '',
-    apellido_paterno: profesor.usuario?.apellido_paterno || '',
-    apellido_materno: profesor.usuario?.apellido_materno || '',
-    correo_electronico: profesor.usuario?.correo_electronico || '',
+    nombre: profesor.nombreCompleto.split(' ')[0] || '',
+    apellidoPaterno: profesor.nombreCompleto.split(' ')[1] || '',
+    apellidoMaterno: profesor.nombreCompleto.split(' ')[2] || '',
+    correoElectronico: profesor.correoElectronico || '',
     telefono: profesor.telefono || '',
     titulo: profesor.titulo || '',
-    es_psicologo: profesor.es_psicologo || false,
+    esPsicologo: profesor.esPsicologo || false,
   }
   mostrarFormulario.value = true
-}
-
-const verDisponibilidad = (profesor) => {
-  router.push(`/horarios-profesor/${profesor.id}`)
 }
 
 const guardarProfesor = async () => {
   cargandoAccion.value = true
   try {
+    const payload = {
+      nombre: formProfesor.value.nombre,
+      apellidoPaterno: formProfesor.value.apellidoPaterno || '',
+      apellidoMaterno: formProfesor.value.apellidoMaterno || '',
+      correoElectronico: formProfesor.value.correoElectronico,
+      telefono: formProfesor.value.telefono || '',
+      titulo: formProfesor.value.titulo || '',
+      esPsicologo: formProfesor.value.esPsicologo || false
+    }
+
     if (modoEdicion.value) {
-      await axios.patch(`${API_URL}/${profesorEditando.value}`, formProfesor.value)
-      cargandoAccion.value = false
+      await axios.patch(`${API_URL}/${profesorEditando.value}`, payload)
       await Swal.fire({
         icon: 'success',
         title: '¡Actualizado!',
-        text: `${formProfesor.value.es_psicologo ? 'Psicólogo' : 'Profesor'} actualizado correctamente`,
+        text: 'Profesor actualizado correctamente',
         showConfirmButton: false,
-        timer: 2000,
-        background: '#ffffff',
-        color: '#213547',
-        iconColor: '#3ABEF9',
-        width: '450px',
+        timer: 2000
       })
     } else {
-      await axios.post(API_URL, formProfesor.value)
-      cargandoAccion.value = false
+      await axios.post(API_URL, payload)
       await Swal.fire({
         icon: 'success',
         title: '¡Agregado!',
-        text: `${formProfesor.value.es_psicologo ? 'Psicólogo' : 'Profesor'} agregado correctamente`,
+        text: 'Profesor agregado correctamente',
         showConfirmButton: false,
-        timer: 2000,
-        background: '#ffffff',
-        color: '#213547',
-        iconColor: '#3ABEF9',
-        width: '450px',
+        timer: 2000
       })
     }
     cerrarFormulario()
     await obtenerProfesores()
   } catch (err) {
-    cargandoAccion.value = false
     console.error('Error al guardar profesor:', err)
     await Swal.fire({
       icon: 'error',
       title: 'Error',
       text: err.response?.data?.message || 'Error al guardar',
-      confirmButtonColor: '#3ABEF9',
-      background: '#ffffff',
-      color: '#213547',
-      iconColor: '#E54848',
-      width: '450px',
+      confirmButtonColor: '#3ABEF9'
     })
   } finally {
     cargandoAccion.value = false
@@ -405,7 +352,7 @@ const cerrarFormulario = () => {
 
 const eliminarProfesor = async (id) => {
   const profesor = profesores.value.find(p => p.id === id)
-  const tipo = profesor?.es_psicologo ? 'psicólogo' : 'profesor'
+  const tipo = profesor?.esPsicologo ? 'psicólogo' : 'profesor'
   
   const confirm = await Swal.fire({
     title: `¿Eliminar ${tipo}?`,
@@ -415,45 +362,28 @@ const eliminarProfesor = async (id) => {
     confirmButtonText: 'Sí, eliminar',
     cancelButtonText: 'Cancelar',
     confirmButtonColor: '#E54848',
-    cancelButtonColor: '#88B7F3',
-    background: '#ffffff',
-    color: '#213547',
-    iconColor: '#E54848',
-    width: '500px',
+    cancelButtonColor: '#88B7F3'
   })
 
   if (confirm.isConfirmed) {
     cargandoAccion.value = true
     try {
       await axios.delete(`${API_URL}/${id}`)
-      cargandoAccion.value = false
       await Swal.fire({
         icon: 'success',
         title: 'Eliminado',
         text: `${tipo} eliminado correctamente`,
         showConfirmButton: false,
-        timer: 2000,
-        background: '#ffffff',
-        color: '#213547',
-        iconColor: '#3ABEF9',
-        width: '450px',
+        timer: 2000
       })
       await obtenerProfesores()
-      if (currentProfesores.value.length === 0 && currentPage.value > 1) {
-        currentPage.value--
-      }
     } catch (err) {
-      cargandoAccion.value = false
       console.error('Error al eliminar:', err)
       await Swal.fire({
         icon: 'error',
         title: 'Error',
         text: 'No se pudo eliminar',
-        confirmButtonColor: '#3ABEF9',
-        background: '#ffffff',
-        color: '#213547',
-        iconColor: '#E54848',
-        width: '450px',
+        confirmButtonColor: '#3ABEF9'
       })
     } finally {
       cargandoAccion.value = false

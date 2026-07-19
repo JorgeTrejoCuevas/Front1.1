@@ -64,13 +64,13 @@
                   {{ materia.tipo === 'especialidad' ? 'Especialidad'
                      : materia.tipo === 'tronco_comun' ? 'Tronco común' : '-' }}
                 </td>
-                <td :data-label="'División'">{{ materia.division?.nombre || '-' }}</td>
+                <td :data-label="'División'">{{ obtenerNombreDivision(materia.divisionId) || '-' }}</td>
                 <td :data-label="'Color'">
                   <div class="color-box" :style="{ backgroundColor: materia.colorIdentificador }"></div>
                 </td>
-                <td :data-label="'Horas Semanales'">{{ materia.horas_semanales || 0 }}</td>
-                <td :data-label="'Duración Mín'">{{ materia.duracion_bloque_horas_min || '-' }}</td>
-                <td :data-label="'Duración Máx'">{{ materia.duracion_bloque_horas_max || '-' }}</td>
+                <td :data-label="'Horas Semanales'">{{ materia.horasSemanales || 0 }}</td>
+                <td :data-label="'Duración Mín'">{{ materia.duracionBloqueHorasMin || '-' }}</td>
+                <td :data-label="'Duración Máx'">{{ materia.duracionBloqueHorasMax || '-' }}</td>
                 <td :data-label="'Acciones'">
                   <button class="btn-secondary btn-accion" @click="editarMateria(materia)">Editar</button>
                   <button class="btn-danger btn-accion" @click="eliminarMateria(materia.id)">Eliminar</button>
@@ -107,7 +107,7 @@
       </div>
     </main>
 
-    <!-- MODAL (ESTILO PERFIL) -->
+    <!-- MODAL -->
     <div v-if="mostrarFormulario" class="form-overlay" @click.self="cerrarFormulario">
       <div class="form-modal">
         <div class="modal-header">
@@ -119,7 +119,7 @@
           <form @submit.prevent="guardarMateria">
             <div class="form-grid-layout">
               <div class="input-group">
-                <label>Nombre</label>
+                <label>Nombre *</label>
                 <input v-model="formMateria.nombre" type="text" placeholder="Nombre de la materia" required />
               </div>
 
@@ -129,7 +129,7 @@
               </div>
 
               <div class="input-group">
-                <label>Tipo</label>
+                <label>Tipo *</label>
                 <select v-model="formMateria.tipo" required>
                   <option value="" disabled>Seleccione tipo</option>
                   <option value="tronco_comun">Tronco común</option>
@@ -138,8 +138,8 @@
               </div>
 
               <div class="input-group">
-                <label>División</label>
-                <select v-model.number="formMateria.division_id" required>
+                <label>División *</label>
+                <select v-model.number="formMateria.divisionId" required>
                   <option value="" disabled>Seleccione división</option>
                   <option v-for="division in divisiones" :key="division.id" :value="division.id">
                     {{ division.nombre }}
@@ -149,22 +149,27 @@
 
               <div class="input-group">
                 <label>Color</label>
-                <input type="color" v-model="formMateria.color_identificador" class="color-pointer" />
+                <input type="color" v-model="formMateria.colorIdentificador" class="color-pointer" />
               </div>
 
               <div class="input-group">
-                <label>Horas semanales</label>
-                <input type="number" v-model.number="formMateria.horas_semanales" min="0" required />
+                <label>Horas semanales *</label>
+                <input type="number" v-model.number="formMateria.horasSemanales" min="0" required />
               </div>
 
               <div class="input-group">
-                <label>Duración mínima (horas)</label>
-                <input type="number" v-model.number="formMateria.duracion_bloque_horas_min" min="1" required />
+                <label>Duración mínima (horas) *</label>
+                <input type="number" v-model.number="formMateria.duracionBloqueHorasMin" min="1" required />
               </div>
 
               <div class="input-group">
-                <label>Duración máxima (horas)</label>
-                <input type="number" v-model.number="formMateria.duracion_bloque_horas_max" :min="formMateria.duracion_bloque_horas_min" required />
+                <label>Duración máxima (horas) *</label>
+                <input 
+                  type="number" 
+                  v-model.number="formMateria.duracionBloqueHorasMax" 
+                  :min="formMateria.duracionBloqueHorasMin" 
+                  required 
+                />
               </div>
             </div>
 
@@ -187,17 +192,27 @@ import Swal from 'sweetalert2'
 import '../../assets/styles.css'
 
 const router = useRouter()
-const API_URL = `http://localhost:3000/asignaturas`
-const API_DIVISIONES = `http://localhost:3000/divisiones`
 
+// ============================================================
+// CONFIGURACIÓN DE API
+// ============================================================
+const API_URL = `http://localhost:8080/api/curriculum`
+const API_DIVISIONES = `http://localhost:8080/api/divisiones`
+
+// ============================================================
+// NAVEGACIÓN
+// ============================================================
 const goBack = () => {
   router.back()
 }
 
+// ============================================================
+// ESTADO
+// ============================================================
 const materias = ref([])
 const divisiones = ref([])
 
-const itemsPerPage = 3
+const itemsPerPage = 5
 const currentPage = ref(1)
 const mostrarFormulario = ref(false)
 const modoEdicion = ref(false)
@@ -206,17 +221,23 @@ const materiaEditando = ref(null)
 const cargando = ref(false)
 const cargandoAccion = ref(false)
 
+// ============================================================
+// FORMULARIO (usando camelCase como el backend)
+// ============================================================
 const formMateria = ref({
   nombre: '',
   abreviatura: '',
   tipo: '',
-  division_id: '',
-  color_identificador: '#88B7F3',
-  horas_semanales: 0,
-  duracion_bloque_horas_min: 1,
-  duracion_bloque_horas_max: 2
+  divisionId: '',
+  colorIdentificador: '#88B7F3',
+  horasSemanales: 0,
+  duracionBloqueHorasMin: 1,
+  duracionBloqueHorasMax: 2
 })
 
+// ============================================================
+// COMPUTADAS
+// ============================================================
 const totalPages = computed(() => Math.ceil(materias.value.length / itemsPerPage))
 const indexOfLastMateria = computed(() => currentPage.value * itemsPerPage)
 const indexOfFirstMateria = computed(() => indexOfLastMateria.value - itemsPerPage)
@@ -224,15 +245,29 @@ const currentMaterias = computed(() =>
   materias.value.slice(indexOfFirstMateria.value, indexOfLastMateria.value)
 )
 
+// ============================================================
+// MÉTODOS
+// ============================================================
 const handlePageChange = (pageNumber) => {
   currentPage.value = pageNumber
 }
 
+const obtenerNombreDivision = (divisionId) => {
+  if (!divisionId) return '-'
+  const division = divisiones.value.find(d => d.id === divisionId)
+  return division ? division.nombre : '-'
+}
+
+// ============================================================
+// CRUD - OBTENER MATERIAS
+// ============================================================
 const obtenerMaterias = async () => {
   cargando.value = true
   try {
     const res = await axios.get(API_URL)
+    // ✅ Los datos del backend ya vienen en camelCase
     materias.value = res.data
+    console.log('Materias cargadas:', materias.value)
   } catch (error) {
     console.error('Error al obtener materias:', error)
     await Swal.fire({
@@ -250,25 +285,38 @@ const obtenerMaterias = async () => {
   }
 }
 
+// ============================================================
+// CRUD - OBTENER DIVISIONES
+// ============================================================
 const obtenerDivisiones = async () => {
   try {
     const res = await axios.get(API_DIVISIONES)
     divisiones.value = res.data
+    console.log('Divisiones cargadas:', divisiones.value)
   } catch (error) {
     console.error('Error al obtener divisiones:', error)
+    // Si no hay servicio de divisiones, usa datos mock
+    divisiones.value = [
+      { id: 1, nombre: 'División 1' },
+      { id: 2, nombre: 'División 2' },
+      { id: 3, nombre: 'División 3' }
+    ]
     await Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: 'No se pudieron cargar las divisiones',
+      icon: 'warning',
+      title: 'Aviso',
+      text: 'No se pudieron cargar las divisiones, usando datos de ejemplo',
       confirmButtonColor: '#3ABEF9',
       background: '#ffffff',
       color: '#213547',
-      iconColor: '#E54848',
+      iconColor: '#F59E0B',
       width: '450px',
     })
   }
 }
 
+// ============================================================
+// CRUD - ABRIR FORMULARIO
+// ============================================================
 const abrirFormularioNuevo = () => {
   modoEdicion.value = false
   materiaEditando.value = null
@@ -276,15 +324,18 @@ const abrirFormularioNuevo = () => {
     nombre: '',
     abreviatura: '',
     tipo: '',
-    division_id: '',
-    color_identificador: '#88B7F3',
-    horas_semanales: 0,
-    duracion_bloque_horas_min: 1,
-    duracion_bloque_horas_max: 2
+    divisionId: '',
+    colorIdentificador: '#88B7F3',
+    horasSemanales: 0,
+    duracionBloqueHorasMin: 1,
+    duracionBloqueHorasMax: 2
   }
   mostrarFormulario.value = true
 }
 
+// ============================================================
+// CRUD - EDITAR MATERIA
+// ============================================================
 const editarMateria = (materia) => {
   modoEdicion.value = true
   materiaEditando.value = materia.id
@@ -292,21 +343,69 @@ const editarMateria = (materia) => {
     nombre: materia.nombre || '',
     abreviatura: materia.abreviatura || '',
     tipo: materia.tipo || '',
-    division_id: materia.division?.id || materia.division_id || '',
-    color_identificador: materia.colorIdentificador || '#88B7F3',
-    horas_semanales: materia.horas_semanales || 0,
-    duracion_bloque_horas_min: materia.duracion_bloque_horas_min || 1,
-    duracion_bloque_horas_max: materia.duracion_bloque_horas_max || 2
+    divisionId: materia.divisionId || '',
+    colorIdentificador: materia.colorIdentificador || '#88B7F3',
+    horasSemanales: materia.horasSemanales || 0,
+    duracionBloqueHorasMin: materia.duracionBloqueHorasMin || 1,
+    duracionBloqueHorasMax: materia.duracionBloqueHorasMax || 2
   }
   mostrarFormulario.value = true
 }
 
+// ============================================================
+// CRUD - GUARDAR MATERIA
+// ============================================================
 const guardarMateria = async () => {
+  // Validaciones
+  if (!formMateria.value.nombre.trim()) {
+    await Swal.fire({
+      icon: 'warning',
+      title: 'Campo requerido',
+      text: 'El nombre de la materia es obligatorio',
+      confirmButtonColor: '#3ABEF9',
+      background: '#ffffff',
+      color: '#213547',
+      iconColor: '#F59E0B',
+      width: '450px',
+    })
+    return
+  }
+
+  if (!formMateria.value.tipo) {
+    await Swal.fire({
+      icon: 'warning',
+      title: 'Campo requerido',
+      text: 'Debes seleccionar un tipo',
+      confirmButtonColor: '#3ABEF9',
+      background: '#ffffff',
+      color: '#213547',
+      iconColor: '#F59E0B',
+      width: '450px',
+    })
+    return
+  }
+
+  if (!formMateria.value.divisionId) {
+    await Swal.fire({
+      icon: 'warning',
+      title: 'Campo requerido',
+      text: 'Debes seleccionar una división',
+      confirmButtonColor: '#3ABEF9',
+      background: '#ffffff',
+      color: '#213547',
+      iconColor: '#F59E0B',
+      width: '450px',
+    })
+    return
+  }
+
   cargandoAccion.value = true
   try {
+    // ✅ Envía camelCase directamente al backend
+    const payload = { ...formMateria.value }
+
     if (modoEdicion.value) {
-      await axios.patch(`${API_URL}/${materiaEditando.value}`, formMateria.value)
-      cargandoAccion.value = false
+      await axios.put(`${API_URL}/${materiaEditando.value}`, payload)
       await Swal.fire({
         icon: 'success',
         title: '¡Actualizado!',
@@ -319,8 +418,7 @@ const guardarMateria = async () => {
         width: '450px',
       })
     } else {
-      await axios.post(API_URL, formMateria.value)
-      cargandoAccion.value = false
+      await axios.post(API_URL, payload)
       await Swal.fire({
         icon: 'success',
         title: '¡Agregado!',
@@ -336,7 +434,6 @@ const guardarMateria = async () => {
     cerrarFormulario()
     await obtenerMaterias()
   } catch (error) {
-    cargandoAccion.value = false
     console.error('Error al guardar materia:', error)
     await Swal.fire({
       icon: 'error',
@@ -353,6 +450,9 @@ const guardarMateria = async () => {
   }
 }
 
+// ============================================================
+// CRUD - ELIMINAR MATERIA
+// ============================================================
 const eliminarMateria = async (id) => {
   const confirm = await Swal.fire({
     title: '¿Eliminar materia?',
@@ -373,7 +473,6 @@ const eliminarMateria = async (id) => {
     cargandoAccion.value = true
     try {
       await axios.delete(`${API_URL}/${id}`)
-      cargandoAccion.value = false
       await Swal.fire({
         icon: 'success',
         title: 'Eliminado',
@@ -386,11 +485,11 @@ const eliminarMateria = async (id) => {
         width: '450px',
       })
       await obtenerMaterias()
+      // Si la página actual queda vacía, retrocede
       if (currentMaterias.value.length === 0 && currentPage.value > 1) {
         currentPage.value--
       }
     } catch (error) {
-      cargandoAccion.value = false
       console.error('Error al eliminar materia:', error)
       await Swal.fire({
         icon: 'error',
@@ -408,12 +507,18 @@ const eliminarMateria = async (id) => {
   }
 }
 
+// ============================================================
+// CRUD - CERRAR FORMULARIO
+// ============================================================
 const cerrarFormulario = () => {
   mostrarFormulario.value = false
   modoEdicion.value = false
   materiaEditando.value = null
 }
 
+// ============================================================
+// CICLO DE VIDA
+// ============================================================
 onMounted(() => {
   obtenerMaterias()
   obtenerDivisiones()
@@ -711,7 +816,75 @@ onMounted(() => {
   background: #f1f5f9;
 }
 
-/* Responsive */
+/* =======================
+   LOADING
+======================= */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e2e8f0;
+  border-top-color: #3abef9;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.action-loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+/* =======================
+   EMPTY STATE
+======================= */
+.empty-state {
+  background: white;
+  border-radius: 20px;
+  padding: 60px 20px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.empty-content i {
+  font-size: 4rem;
+  color: #cbd5e1;
+  margin-bottom: 20px;
+}
+
+.empty-content h3 {
+  color: #334155;
+  margin-bottom: 10px;
+}
+
+.empty-content p {
+  color: #94a3b8;
+}
+
+/* =======================
+   RESPONSIVE
+======================= */
 @media (max-width: 768px) {
   .materias-main {
     padding: 0 15px;

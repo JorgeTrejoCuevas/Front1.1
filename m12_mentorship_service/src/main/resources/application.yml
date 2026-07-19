@@ -3,30 +3,32 @@ spring:
     name: m12-mentorship-service
 
   datasource:
-    url: jdbc:h2:mem:mentorshipdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+    url: jdbc:postgresql://switchyard.proxy.rlwy.net:44805/railway
+    username: postgres
+    password: GcsEmbPNyJCDzIPDWiApeZlNfmtWKdTB
+    driver-class-name: org.postgresql.Driver
 
   jpa:
-    hibernate:
-      ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
 server:
   port: 8092
 
 eureka:
   client:
-    enabled: true
     service-url:
-      defaultZone: http://eureka-server:8761/eureka/
-
+      defaultZone: http://localhost:8761/eureka/
   instance:
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${server.port}
+
+jwt:
+  secret: CRONOS2026_SECRET_KEY_256_BITS_LONG_ENOUGH_1234567890ABCDEF
+  expiration: 3600000
