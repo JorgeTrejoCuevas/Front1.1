@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class MentorshipService {
+public class mentorshipService {
 
     private final AsesoriaRepository asesoriaRepository;
 

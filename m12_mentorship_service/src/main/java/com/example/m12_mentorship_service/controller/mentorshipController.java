@@ -2,7 +2,7 @@ package com.example.m12_mentorship_service.controller;
 
 import com.example.m12_mentorship_service.dto.AsesoriaDto;
 import com.example.m12_mentorship_service.entity.AsesoriaEntity.EstadoAsesoria;
-import com.example.m12_mentorship_service.service.MentorshipService;
+import com.example.m12_mentorship_service.service.mentorshipService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +14,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class mentorshipController {
 
-    private final MentorshipService mentorshipService;
+    private final mentorshipService mentorshipService;
 
     @PostMapping
     public ResponseEntity<AsesoriaDto> create(@RequestBody AsesoriaDto dto) {

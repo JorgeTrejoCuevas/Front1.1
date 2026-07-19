@@ -23,7 +23,6 @@
     </div>
 
     <main class="alumnos-main">
-      <!-- Header con botón a la izquierda y título centrado -->
       <div class="alumnos-header">
         <button @click="goBack" class="btn-back-icon" title="Volver al Dashboard">
           <i class="fas fa-arrow-left"></i>
@@ -54,9 +53,13 @@
             </thead>
             <tbody>
               <tr v-for="alumno in currentAlumnos" :key="alumno.id_estudiante">
-                <td :data-label="'Nombre'">{{ alumno.nombre }}</td>
-                <td :data-label="'Correo'">{{ alumno.correo }}</td>
-                <td :data-label="'Grupo'">{{ obtenerNombreGrupo(alumno.id_grupo) }}</td>
+                <td :data-label="'Nombre'">
+                  {{ alumno.nombreCompleto || alumno.nombre || alumno.usuario?.nombre || 'Sin nombre' }}
+                </td>
+                <td :data-label="'Correo'">
+                  {{ alumno.correoElectronico || alumno.correo || alumno.usuario?.correo || 'Sin correo' }}
+                </td>
+                <td :data-label="'Grupo'">{{ obtenerNombreGrupo(alumno.idGrupo || alumno.id_grupo) }}</td>
                 <td :data-label="'Matrícula'">{{ alumno.matricula }}</td>
                 <td :data-label="'Acciones'">
                   <button class="btn-secondary btn-accion" @click="editarAlumno(alumno)">Editar</button>
@@ -109,22 +112,18 @@
                 <label>Nombre</label>
                 <input v-model="formAlumno.nombre" type="text" required />
               </div>
-
               <div class="input-group">
                 <label>Apellido Paterno</label>
                 <input v-model="formAlumno.apellido_paterno" type="text" required />
               </div>
-
               <div class="input-group">
                 <label>Apellido Materno</label>
                 <input v-model="formAlumno.apellido_materno" type="text" />
               </div>
-
               <div class="input-group">
                 <label>Correo Electrónico</label>
                 <input v-model="formAlumno.correo_electronico" type="email" required />
               </div>
-
               <div class="input-group">
                 <label>Grupo</label>
                 <select v-model="formAlumno.id_grupo" required>
@@ -134,7 +133,6 @@
                   </option>
                 </select>
               </div>
-
               <div class="input-group">
                 <label>Matrícula</label>
                 <input v-model="formAlumno.matricula" type="text" required />
