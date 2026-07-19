@@ -31,10 +31,11 @@ public class EstudianteDTOs {
 
     @Data
     public static class EstudianteResponseDTO {
-        private Integer id;
-        private String nombreCompleto;
-        private String correoElectronico;
-        private Integer idGrupo;
-        private String matricula;
+    private Integer id;
+    private String matricula;
+    private Integer idGrupo;
+    private String nombreCompleto;
+    private String correoElectronico;
+    // ... no necesitas escribir los sets manualmente
     }
 }

@@ -90,31 +90,29 @@
                 <th>Acciones</th>
               </tr>
             </thead>
-            <tbody>
-              <tr v-for="profesor in currentProfesores" :key="profesor.id">
-                <td :data-label="'Nombre'">
-                  <div class="nombre-info">
-                    <span v-if="profesor.es_psicologo" class="psicologo-badge"></span>
-                    {{ profesor.usuario?.nombre }} 
-                    {{ profesor.usuario?.apellido_paterno }} 
-                    {{ profesor.usuario?.apellido_materno }}
-                  </div>
-                </td>
-                <td :data-label="'Correo'">{{ profesor.usuario?.correo_electronico || '-' }}</td>
-                <td :data-label="'Teléfono'">{{ profesor.telefono || '-' }}</td>
-                <td :data-label="'Título'">{{ profesor.titulo || '-' }}</td>
-                <td :data-label="'Tipo'">
-                  <span :class="['tipo-badge', profesor.es_psicologo ? 'psicologo' : 'profesor']">
-                    {{ profesor.es_psicologo ? 'Psicólogo' : 'Profesor' }}
-                  </span>
-                </td>
-                <td :data-label="'Acciones'">
-                  <button class="btn-secondary btn-accion" @click="editarProfesor(profesor)">Editar</button>
-                  <button class="btn-danger btn-accion" @click="eliminarProfesor(profesor.id)">Eliminar</button>
-                  <button class="btn-primary btn-accion" @click="verDisponibilidad(profesor)">Disponibilidad</button>
-                </td>
-              </tr>
-            </tbody>
+           <tbody>
+  <tr v-for="profesor in currentProfesores" :key="profesor.id">
+    <td :data-label="'Nombre'">
+      <div class="nombre-info">
+        <span v-if="profesor.es_psicologo" class="psicologo-badge"></span>
+        {{ profesor.nombreCompleto }}
+      </div>
+    </td>
+    <td :data-label="'Correo'">{{ profesor.correoElectronico || '-' }}</td>
+    <td :data-label="'Teléfono'">{{ profesor.telefono || '-' }}</td>
+    <td :data-label="'Título'">{{ profesor.titulo || '-' }}</td>
+    <td :data-label="'Tipo'">
+      <span :class="['tipo-badge', profesor.es_psicologo ? 'psicologo' : 'profesor']">
+        {{ profesor.es_psicologo ? 'Psicólogo' : 'Profesor' }}
+      </span>
+    </td>
+    <td :data-label="'Acciones'">
+      <button class="btn-secondary btn-accion" @click="editarProfesor(profesor)">Editar</button>
+      <button class="btn-danger btn-accion" @click="eliminarProfesor(profesor.id)">Eliminar</button>
+      <button class="btn-primary btn-accion" @click="verDisponibilidad(profesor)">Disponibilidad</button>
+    </td>
+  </tr>
+</tbody>
           </table>
 
           <div class="pagination">
@@ -223,7 +221,8 @@ const goBack = () => {
   router.back()
 }
 
-const API_URL = `http://localhost:3000/profesores`
+// Cambia esto en tu ProfesoresView.vue:
+const API_URL = `http://localhost:8080/api/teachers` // En lugar de /api/profesores
 
 const profesores = ref([])
 const itemsPerPage = 5
@@ -244,7 +243,6 @@ const formProfesor = ref({
   es_psicologo: false,
 })
 
-// Filtrar profesores por tipo y búsqueda
 const profesoresFiltrados = computed(() => {
   let filtrados = profesores.value
   
@@ -255,14 +253,13 @@ const profesoresFiltrados = computed(() => {
     filtrados = filtrados.filter(p => p.es_psicologo)
   }
   
-  // Filtrar por búsqueda
+  // Filtrar por búsqueda - AHORA BUSCAMOS EN LOS CAMPOS PLANOS
   if (terminoBusqueda.value.trim()) {
     const busqueda = terminoBusqueda.value.toLowerCase()
     filtrados = filtrados.filter(p => 
-      p.usuario?.nombre?.toLowerCase().includes(busqueda) ||
-      p.usuario?.apellido_paterno?.toLowerCase().includes(busqueda) ||
-      p.usuario?.apellido_materno?.toLowerCase().includes(busqueda) ||
-      p.usuario?.correo_electronico?.toLowerCase().includes(busqueda)
+      // Buscamos en nombreCompleto y correoElectronico, que son los campos que vienen del DTO
+      p.nombreCompleto?.toLowerCase().includes(busqueda) ||
+      p.correoElectronico?.toLowerCase().includes(busqueda)
     )
   }
   

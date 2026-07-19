@@ -6,6 +6,8 @@ import lombok.Data;
 public class TeacherDto {
     private Integer id;
     private Integer idUsuario;
+    private String nombreCompleto;    // Agregado
+    private String correoElectronico; // Agregado
     private String abreviaturaNombre;
     private String telefono;
     private String titulo;
